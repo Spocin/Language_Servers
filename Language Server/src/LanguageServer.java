@@ -23,10 +23,10 @@ public class LanguageServer {
     }
 
     public void start() {
-        String dictionaryPath = getPathFromUser();
-
-        loadDictionary(dictionaryPath);
+        loadDictionary(getPathFromUser());
         startListening();
+
+        logInToProxy();
 
         Scanner sc = new Scanner(System.in);
         while (true) {
@@ -38,34 +38,16 @@ public class LanguageServer {
             switch (sc.nextLine()) {
                 case "STOP":
                     System.out.println("Turning off the server....");
-                    logoutFromMainServer();
                     executor.shutdown();
                     System.exit(0);
-
                     break;
 
                 case "LOGIN":
-                    System.out.println("Logging in...");
-                    boolean result1 = loginOnMainServer();
-
-                    if (result1) {
-                        System.out.println("Successfully logged in \n");
-                    } else {
-                        System.out.println("Error logging in \n");
-                    }
-
+                    logInToProxy();
                     break;
 
                 case "LOGOUT":
-                    System.out.println("Logging out...");
-                    boolean result2 = logoutFromMainServer();
-
-                    if (result2) {
-                        System.out.println("Successfully logged out \n");
-                    } else {
-                        System.out.println("Error logging out \n");
-                    }
-
+                    logOutFromProxy();
                     break;
             }
         }
@@ -151,74 +133,86 @@ public class LanguageServer {
         }
 
         executor.submit(() -> requestsLogic);
-        System.out.println("\tSuccessfully created");
+        System.out.println("\tSuccessfully created listener");
     }
 
-    private boolean loginOnMainServer () {
+    private void logInToProxy() {
+        System.out.println("Logging in to Proxy...");
 
         try (Socket socket = new Socket()) {
+            try {
+                socket.connect(new InetSocketAddress("127.0.0.1", 7777));
+                System.out.println("\tConnected to proxy");
+            } catch (IOException e) {
+                System.out.println("\u001B[31m\t" + "Error connecting to proxy" + "\u001B[0m");
+            }
 
-            socket.connect(new InetSocketAddress("127.0.0.1",7777));
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()),true)) {
 
-            writer.write("Login");
-            writer.newLine();
-            writer.write(languageCode);
-            writer.newLine();
-            writer.write(String.valueOf(serverSocket.getLocalPort()));
-            writer.newLine();
-            writer.flush();
+                    writer.println("Login");
+                    writer.println(languageCode);
+                    writer.println(serverSocket.getLocalPort());
+                    System.out.println("\tSent info");
 
-            String reply = reader.readLine();
+                    String reply = reader.readLine();
+                    System.out.println("\tReceived answer");
 
-            switch (reply) {
-                case "Accept":
-                    return true;
+                    switch (reply) {
+                        case "Accept":
+                            System.out.println("\tSuccessfully logged in\n");
 
-                case "Deny":
-                    System.out.println("Server for such language already exists");
-                    return false;
+                        case "Deny":
+                            System.out.println("\tServer for such language already exists\n");
+                    }
+
+                }
+            } catch (IOException e) {
+                System.out.println("\u001B[31m\t" + "Error reading/writing to Proxy" + "\u001B[0m");
+            }
+        }
+        catch (IOException e) {
+            System.out.println("\u001B[31m\t" + "Error logging in to Proxy" + "\u001B[0m\n");
+        }
+    }
+
+    private void logOutFromProxy() {
+        System.out.println("Logging out from Proxy...");
+
+        try (Socket socket = new Socket()) {
+            try {
+                socket.connect(new InetSocketAddress("127.0.0.1",7777));
+            } catch (IOException e) {
+                System.out.println("\u001B[31m\t" + "Error connecting to proxy" + "\u001B[0m");
+            }
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()),true)) {
+
+                    writer.println("Logout");
+                    writer.println(languageCode);
+                    System.out.println("\tSent info");
+
+                    String response = reader.readLine();
+                    System.out.println("\tReceived answer");
+
+                    switch (response) {
+                        case "Successful":
+                            System.out.println("\tSuccessfully logged out\n");
+                            break;
+
+                        case "NoServer":
+                            System.out.println("\tServer not logged in\n");
+                            break;
+                    }
+                }
+            } catch (IOException e) {
+                System.out.println("\u001B[31m\t" + "Error reading/writing to Proxy" + "\u001B[0m");
             }
 
         } catch (IOException e) {
-            System.err.println("Error logging in on main server");
-            return false;
+            System.err.println("\u001B[31m\t" + "Error logging out from Proxy" + "\u001B[0m\n");
         }
-
-        return false;
-    }
-
-    private boolean logoutFromMainServer () {
-
-        try (Socket socket = new Socket()) {
-
-            socket.connect(new InetSocketAddress("127.0.0.1",7777));
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-            writer.write("Logout");
-            writer.newLine();
-            writer.write(languageCode);
-            writer.newLine();
-            writer.flush();
-
-            String response = reader.readLine();
-
-            switch (response) {
-                case "Successful":
-                    return true;
-
-                case "Error":
-                    return false;
-            }
-
-        } catch (IOException e) {
-            System.err.println("Error logging out from main server");
-            return false;
-        }
-
-        return false;
     }
 
     Runnable requestsLogic = () -> {

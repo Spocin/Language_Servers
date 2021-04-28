@@ -78,7 +78,7 @@ public class Register {
                 writer.write("Successful");
             } else {
                 System.out.println("Error removing server: " + key);
-                writer.write("Error");
+                writer.write("NoServer");
             }
             writer.flush();
 
