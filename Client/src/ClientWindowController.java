@@ -76,7 +76,7 @@ public class ClientWindowController {
 
         try (Socket socket = new Socket()){
             try {
-                socket.connect(new InetSocketAddress("127.0.0.1",6666),5);
+                socket.connect(new InetSocketAddress("127.0.0.1",6666),500);
                 System.out.println("\tConnected to proxy");
             } catch (IOException e) {
                 System.err.println("Error connecting to Proxy");
