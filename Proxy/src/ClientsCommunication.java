@@ -3,7 +3,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Communication {
+public class ClientsCommunication {
 
     private final Socket socket;
     private final ConcurrentHashMap<String,Integer> languageServersMap;
@@ -13,7 +13,7 @@ public class Communication {
     private String address;
     private String port;
 
-    public Communication (Socket socket, ConcurrentHashMap<String,Integer> languageServersMap) {
+    public ClientsCommunication(Socket socket, ConcurrentHashMap<String,Integer> languageServersMap) {
 
         this.socket = socket;
         this.languageServersMap = languageServersMap;

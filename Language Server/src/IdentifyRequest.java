@@ -12,15 +12,19 @@ public class IdentifyRequest {
     public IdentifyRequest (Socket socket, ConcurrentHashMap<String,String> wordsMap) {
         this.socket = socket;
         this.wordsMap = wordsMap;
+
         this.identifier = receiveIdentifier();
         answerRequest();
+
         System.out.println();
     }
 
     private String receiveIdentifier () {
+
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             System.out.println("\tReceiving identifier...");
             return reader.readLine();
+
         } catch (IOException e) {
             System.out.println("\u001B[31m\t" + "Error receiving identifier" + "\u001B[0m\n");
             return null;
@@ -51,7 +55,7 @@ public class IdentifyRequest {
             try {
                 socket.close();
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error clossing connection" + "\u001B[0m");
+                System.out.println("\u001B[31m\t" + "Error closing connection" + "\u001B[0m");
             }
             System.out.println();
         }

@@ -53,6 +53,7 @@ public class LanguageServer {
         }
     }
 
+
     private String getPathFromUser () {
         Scanner sc = new Scanner(System.in);
         String dictionaryPath = "";
@@ -119,6 +120,7 @@ public class LanguageServer {
         }
     }
 
+
     private void startListening () {
         System.out.println("Creating listener for incoming connections...");
 
@@ -150,7 +152,7 @@ public class LanguageServer {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                 try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()),true)) {
 
-                    writer.println("Login");
+                    writer.println("LOGIN");
                     writer.println(languageCode);
                     writer.println(serverSocket.getLocalPort());
                     System.out.println("\tSent info");
@@ -159,16 +161,16 @@ public class LanguageServer {
                     System.out.println("\tReceived answer");
 
                     switch (reply) {
-                        case "Accept":
+                        case "ACCEPT":
                             System.out.println("\tSuccessfully logged in\n");
 
-                        case "Deny":
+                        case "DENY":
                             System.out.println("\tServer for such language already exists\n");
                     }
 
                 }
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error reading/writing to Proxy" + "\u001B[0m");
+                System.out.println("\u001B[31m\t" + "Error communicating with" + "\u001B[0m");
             }
         }
         catch (IOException e) {
@@ -189,7 +191,7 @@ public class LanguageServer {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                 try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()),true)) {
 
-                    writer.println("Logout");
+                    writer.println("LOGOUT");
                     writer.println(languageCode);
                     System.out.println("\tSent info");
 
@@ -214,6 +216,7 @@ public class LanguageServer {
             System.err.println("\u001B[31m\t" + "Error logging out from Proxy" + "\u001B[0m\n");
         }
     }
+
 
     Runnable requestsLogic = () -> {
         while (true) {
