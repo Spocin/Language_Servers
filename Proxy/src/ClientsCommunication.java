@@ -6,74 +6,86 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ClientsCommunication {
 
     private final Socket socket;
-    private final ConcurrentHashMap<String,Integer> languageServersMap;
+    private final ConcurrentHashMap<String,Integer> serversMap;
 
     private String word;
-    private String languageCode;
-    private String address;
+    private String serverCode;
     private String port;
 
-    public ClientsCommunication(Socket socket, ConcurrentHashMap<String,Integer> languageServersMap) {
+    public ClientsCommunication(Socket socket, ConcurrentHashMap<String,Integer> serversMap) {
 
         this.socket = socket;
-        this.languageServersMap = languageServersMap;
+        this.serversMap = serversMap;
 
-        boolean pass = checkRequestIntegrity();
+        receiveData();
+        boolean forwardRequest = checkIfTargetServerIsOnline();
 
-        if (pass) {
-            sendWordToLanguageServer();
-            System.out.println("Incoming client request passed: " + word + " | " + languageCode);
+        if (forwardRequest) {
+            forwardRequestToServer();
         }
     }
 
-    private boolean checkRequestIntegrity() {
+    private void receiveData () {
 
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+            this.word = reader.readLine();
+            this.serverCode = reader.readLine();
+            this.port = reader.readLine();
 
-            word = reader.readLine();
-            languageCode = reader.readLine();
-            port = reader.readLine();
+            System.out.println("\tReceived data: " + word + " | " + serverCode + " | " + port);
 
-            address = socket.getInetAddress().getHostAddress();
+        } catch (IOException e) {
+            System.out.println("\u001B[31m\t" + "Error receiving data" + "\u001B[0m\n");
+        }
+    }
 
-            if (!languageServersMap.containsKey(languageCode)) {
-                System.out.println("Incoming client request: " + languageCode + " no such language server");
-                writer.write("NoServer");
-                writer.newLine();
-                writer.flush();
-                return false;
+    private boolean checkIfTargetServerIsOnline() {
+
+        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()),true)) {
+
+            if (serversMap.containsKey(serverCode)) {
+                writer.println("OK");
+                System.out.println("\tTarget server is online");
+                return true;
             }
 
-            writer.write("Ok");
-            writer.newLine();
-            writer.flush();
-            return true;
+            writer.println("NOSERVER");
+            System.out.println("\tTarget server is offline");
+            return false;
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("\u001B[31m\t" + "Error verifying if target server is online" + "\u001B[0m\n");
         }
 
         return false;
     }
 
-    private void sendWordToLanguageServer() {
+    private void forwardRequestToServer() {
 
-        try (Socket socket = new Socket()) {
+        try (Socket forwardSocket = new Socket()) {
 
-            socket.connect(new InetSocketAddress("127.0.0.1", languageServersMap.get(languageCode)));
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            try {
+                forwardSocket.connect(new InetSocketAddress("127.0.0.1", serversMap.get(serverCode)), 500);
+                System.out.println("\tConnected to server");
 
-            writer.write(word);
-            writer.newLine();
-            writer.write(address);
-            writer.newLine();
-            writer.write(port);
-            writer.flush();
+            } catch (IOException e) {
+                System.out.println("\u001B[31m\t" + "Error connecting to server" + "\u001B[0m\n");
+            }
+
+            try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(forwardSocket.getOutputStream()),true)) {
+
+                writer.println("TRANSLATE");
+                writer.println(word);
+                writer.println(socket.getLocalAddress().getHostAddress());
+                writer.println(port);
+
+                System.out.println("\tForwarded request");
+            } catch (IOException e) {
+                System.out.println("\u001B[31m\t" + "Error sending data" + "\u001B[0m");
+            }
 
         } catch (IOException e) {
-            System.err.println("Error sending to language server");
+            System.out.println("\u001B[31m\t" + "Error forwarding request" + "\u001B[0m\n");
         }
 
     }

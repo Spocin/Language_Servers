@@ -82,24 +82,26 @@ public class ClientWindowController {
                 System.err.println("Error connecting to Proxy");
             }
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(),true);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                try (PrintWriter writer = new PrintWriter(socket.getOutputStream(),true)) {
 
-            writer.println(wordTextField.getText());
-            writer.println(languageCodeField.getText());
-            writer.println(serverSocket.getLocalPort());
+                    writer.println(wordTextField.getText());
+                    writer.println(languageCodeField.getText());
+                    writer.println(serverSocket.getLocalPort());
 
-            String response = reader.readLine();
+                    String response = reader.readLine();
 
-            switch (response) {
-                case "Ok":
-                    System.out.println("\tProxy accepted request");
-                    break;
+                    switch (response) {
+                        case "OK":
+                            System.out.println("\tProxy accepted request");
+                            break;
 
-                case "NoServer":
-                    System.out.println("\tNo such language server is online: " + languageCodeField.getText());
-                    System.out.println("End of connection\n");
-                    break;
+                        case "NOSERVER":
+                            System.out.println("\tNo such language server is online: " + languageCodeField.getText());
+                            System.out.println("End of connection\n");
+                            break;
+                    }
+                }
             }
 
         } catch (IOException e) {
