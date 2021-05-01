@@ -9,21 +9,29 @@ public class ServersCommunication {
     private final Socket socket;
     private final ConcurrentHashMap<String,Integer> languageServersMap;
 
-    private final String identifier;
+    private BufferedReader reader;
+    private PrintWriter writer;
+
+    private String identifier;
 
     public ServersCommunication(Socket socket, ConcurrentHashMap<String,Integer> languageServersMap) {
 
         this.socket = socket;
         this.languageServersMap = languageServersMap;
+        try {
+            this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()),true);
 
-        this.identifier = receiveIdentifier();
+            this.identifier = receiveIdentifier();
 
-        answerRequest();
+            answerRequest();
+        } catch (IOException e) {
+            System.out.println("\u001B[31m\t" + "Error obtaining streams from socket" + "\u001B[0m\n");
+        }
     }
 
     private String receiveIdentifier () {
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try  {
             System.out.println("\tReceiving identifier...");
             return reader.readLine();
 
@@ -65,46 +73,41 @@ public class ServersCommunication {
 
     private void addToLanguageServerMap () {
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()),true)) {
+        try {
+            String serverCode = reader.readLine();
+            String serverPort = reader.readLine();
 
-                String serverCode = reader.readLine();
-                String serverPort = reader.readLine();
+            System.out.println("\tLogging in server " + serverCode + " on port: " + serverPort + "...");
 
-                System.out.println("\tLogging in server: " + serverCode + " on port: " + serverPort);
-
-                if (languageServersMap.containsKey(serverCode)) {
-                    writer.println("DENY");
-                    System.out.println("\u001B[31m\t" + "Error, server already logged in" + "\u001B[0m\n");
-                } else {
-                    writer.write("ACCEPT");
-                    languageServersMap.put(serverCode,Integer.parseInt(serverPort));
-                    System.out.println("\tSuccessfully logged in new server");
-                }
+            if (languageServersMap.containsKey(serverCode)) {
+                writer.println("DENY");
+                System.out.println("\u001B[31m\t" + "Error, server already logged in" + "\u001B[0m\n");
+            } else {
+                writer.println("ACCEPT");
+                languageServersMap.put(serverCode,Integer.parseInt(serverPort));
+                System.out.println("\tSuccessfully logged in new server\n");
             }
 
         } catch (IOException e) {
             System.out.println("\u001B[31m\t" + "Error communicating with server" + "\u001B[0m\n");
+            e.printStackTrace();
         }
     }
 
     private void removeFromLanguageServerMap () {
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()),true)) {
+        try {
+            String serverCode = reader.readLine();
 
-                String serverCode = reader.readLine();
+            if (languageServersMap.containsKey(serverCode)) {
+                languageServersMap.remove(serverCode);
+                System.out.println("\t" + serverCode + " successfully logged out\n");
+                writer.println("SUCCESSFUL");
 
-                if (languageServersMap.containsKey(serverCode)) {
-                    languageServersMap.remove(serverCode);
-                    System.out.println("\t" + serverCode + " successfully logged out");
-                    writer.println("SUCCESSFUL");
+            } else {
 
-                } else {
-
-                    System.out.println("\u001B[31m\t" + "No such server: " + serverCode + "\u001B[0m\n");
-                    writer.println("NoServer");
-                }
+                System.out.println("\u001B[31m\t" + "No such server: " + serverCode + "\u001B[0m\n");
+                writer.println("NoServer");
             }
 
         } catch (IOException e) {

@@ -30,7 +30,7 @@ public class LanguageServer {
 
         Scanner sc = new Scanner(System.in);
         while (true) {
-            System.out.println("==[Listening on port: " + serverSocket.getLocalPort() + "===========");
+            System.out.println("==[Listening on port: " + serverSocket.getLocalPort() + "]===========");
             System.out.println("STOP - turns off the server");
             System.out.println("LOGIN - signs up on main server");
             System.out.println("LOGOUT - signs out from main server\n");
@@ -134,8 +134,8 @@ public class LanguageServer {
             System.exit(-1);
         }
 
-        executor.submit(() -> requestsLogic);
-        System.out.println("\tSuccessfully created listener");
+        executor.submit(requestsLogic);
+        System.out.println("\tSuccessfully created listener\n");
     }
 
     private void logInToProxy() {
@@ -143,7 +143,7 @@ public class LanguageServer {
 
         try (Socket socket = new Socket()) {
             try {
-                socket.connect(new InetSocketAddress("127.0.0.1", 7777));
+                socket.connect(new InetSocketAddress("127.0.0.1", 7777),500);
                 System.out.println("\tConnected to proxy");
             } catch (IOException e) {
                 System.out.println("\u001B[31m\t" + "Error connecting to proxy" + "\u001B[0m");
@@ -158,19 +158,21 @@ public class LanguageServer {
                     System.out.println("\tSent info");
 
                     String reply = reader.readLine();
-                    System.out.println("\tReceived answer");
+                    System.out.println("\tReceived answer: " + reply);
 
                     switch (reply) {
                         case "ACCEPT":
                             System.out.println("\tSuccessfully logged in\n");
+                            break;
 
                         case "DENY":
                             System.out.println("\tServer for such language already exists\n");
+                            break;
                     }
 
                 }
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error communicating with" + "\u001B[0m");
+                System.out.println("\u001B[31m\t" + "Error communicating with proxy" + "\u001B[0m\n");
             }
         }
         catch (IOException e) {
@@ -217,12 +219,11 @@ public class LanguageServer {
         }
     }
 
-
     Runnable requestsLogic = () -> {
         while (true) {
             try {
                 Socket socket = serverSocket.accept();
-                System.out.println("Accepted server connection");
+                System.out.println("Accepted proxy connection");
                 executor.submit(() -> new IdentifyRequest(socket,wordsMap));
 
             } catch (IOException e) {

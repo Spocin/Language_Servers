@@ -1,5 +1,8 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.*;
 
@@ -48,13 +51,14 @@ public class Proxy {
 
         System.out.println("Initializing listener for servers requests...");
 
-        try (ServerSocket serverSocket = new ServerSocket(7777, 10, InetAddress.getByName(null))) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(7777, 10, InetAddress.getByName(null));
 
             mainExecutor.submit(() -> {
                 while (true) {
                     Socket socket = serverSocket.accept();
+                    mainExecutor.submit(() -> new ServersCommunication(socket, languageServersMap));
                     System.out.println("Accepted server connection...");
-                    mainExecutor.submit(() -> new ServersCommunication(socket,languageServersMap));
                 }
             });
 
@@ -97,7 +101,7 @@ public class Proxy {
         pingExecutor = Executors.newScheduledThreadPool(1);
 
         try {
-            pingExecutor.scheduleWithFixedDelay(pingServers,5,5,TimeUnit.SECONDS);
+            pingExecutor.scheduleWithFixedDelay(() -> new PingServers(mainExecutor,languageServersMap),5,10,TimeUnit.SECONDS);
 
             System.out.println("\tSuccessfully created pinger\n");
 
@@ -105,42 +109,4 @@ public class Proxy {
             System.out.println("\u001B[31m\t" + "Error creating pinger" + "\u001B[0m\n");
         }
     }
-
-    Runnable pingServers = () -> {
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("Ping report:\n");
-
-        languageServersMap.forEach((serverCode,serverPort) -> {
-
-            mainExecutor.submit(() -> {
-
-                try (Socket socket = new Socket()) {
-
-                    socket.connect(new InetSocketAddress("127.0.0.1",serverPort),200);
-
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-                    writer.println("PING");
-
-                    if (reader.readLine().equals("PONG")) {
-                        sb.append("\t" + serverCode + ": answered");
-                    } else {
-                        throw new IOException();
-                    }
-
-                } catch (IOException e) {
-                    sb.append("\t" + serverCode + ": \u001B[31m\tdidn't answer\u001B[0m\n");
-                    languageServersMap.remove(serverCode);
-                }
-
-            });
-        });
-
-        sb.append("\n");
-
-        System.out.println(sb.toString());
-    };
 }
