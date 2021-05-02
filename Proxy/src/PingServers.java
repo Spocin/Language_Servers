@@ -48,12 +48,12 @@ public class PingServers {
                     return "\t" + serverCode + ": answered\n";
                 } else {
                     languageServersMap.remove(serverCode);
-                    return "\t" + serverCode + "\u001B[31m" + ": didn't answer" + "\u001B[0m\n";
+                    return "\t" + serverCode + ": didn't answer\n";
                 }
 
             } catch (IOException e) {
                 languageServersMap.remove(serverCode);
-                return "\t" + serverCode + "\u001B[31m" + ": error pinging" + "\u001B[0m\n";
+                return "\t" + serverCode + ": error pinging\n";
             }
 
         })));

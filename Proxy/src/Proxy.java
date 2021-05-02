@@ -1,8 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.*;
 
@@ -75,7 +72,8 @@ public class Proxy {
 
         System.out.println("Initializing listener for clients requests...");
 
-        try (ServerSocket serverSocket = new ServerSocket(6666,10,InetAddress.getByName(null))) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(6666,10,InetAddress.getByName(null));
 
             mainExecutor.submit(() -> {
                 while (true) {
@@ -88,9 +86,8 @@ public class Proxy {
             System.out.println("\tSuccessfully created listener for clients\n");
 
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error initializing listener for servers" + "\u001B[0m\n");
-            mainExecutor.shutdownNow();
-            System.exit(-1);
+            System.out.println("\tError initializing listener for servers\n");
+            stop(-1);
         }
     }
 
@@ -108,5 +105,12 @@ public class Proxy {
         } catch (Exception e) {
             System.out.println("\u001B[31m\t" + "Error creating pinger" + "\u001B[0m\n");
         }
+    }
+
+    private void stop(int exitCode) {
+        System.out.println("Shutting down proxy...");
+        mainExecutor.shutdownNow();
+        pingExecutor.shutdownNow();
+        System.exit(exitCode);
     }
 }

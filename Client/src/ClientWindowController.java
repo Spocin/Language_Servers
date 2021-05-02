@@ -34,22 +34,33 @@ public class ClientWindowController {
     }
 
     private void setupListener() {
+        System.out.println("Creating listener...");
 
-        executor.submit(() -> {
-            this.serverSocket = new ServerSocket(0,0,InetAddress.getByName(null));
+        try {
+            this.serverSocket = new ServerSocket(0, 10, InetAddress.getByName(null));
+            System.out.println("\tSuccessfully created ServerSocket");
 
-            while (true) {
-                Socket socket = serverSocket.accept();
-                receiveTranslation(socket);
-            }
-        });
+            executor.submit(() -> {
+                while (true) {
+                    Socket socket = serverSocket.accept();
+                    System.out.println("Accepted server request...");
+                    receiveTranslation(socket);
+                }
+            });
 
+            System.out.println("\tSuccessfully created listener\n");
+
+        } catch (IOException e) {
+            System.out.println("\tError creating socket\n");
+            stop(-1);
+        }
     }
 
     private void setupTranslateButton() {
         this.translateButton.setOnAction(event -> {
+            System.out.println("Sending request...");
 
-            System.out.print("Verifying given input: ");
+            System.out.print("\tVerifying given input: ");
             if (verifyIntegrity()) {
                 sendInformation();
             }
@@ -58,12 +69,12 @@ public class ClientWindowController {
 
     private boolean verifyIntegrity() {
         if (wordTextField.getText().isEmpty()) {
-            System.out.print("word field is empty\n");
+            System.out.println("word field is empty");
             return false;
         }
 
         if (languageCodeField.getText().isEmpty()) {
-            System.out.print("language server field is empty\n");
+            System.out.println("language server field is empty");
             return false;
         }
 
@@ -72,14 +83,15 @@ public class ClientWindowController {
     }
 
     private void sendInformation() {
-        System.out.println("Sending request to proxy...");
+        System.out.println("\tSending request to proxy...");
 
         try (Socket socket = new Socket()){
             try {
                 socket.connect(new InetSocketAddress("127.0.0.1",6666),500);
                 System.out.println("\tConnected to proxy");
+
             } catch (IOException e) {
-                System.err.println("Error connecting to Proxy");
+                System.out.println("\tError connecting to Proxy\n");
             }
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
@@ -88,17 +100,18 @@ public class ClientWindowController {
                     writer.println(wordTextField.getText());
                     writer.println(languageCodeField.getText());
                     writer.println(serverSocket.getLocalPort());
+                    System.out.println("\tSent data");
 
                     String response = reader.readLine();
+                    System.out.println("\tReceived response");
 
                     switch (response) {
                         case "OK":
-                            System.out.println("\tProxy accepted request");
+                            System.out.println("\tProxy accepted request\n");
                             break;
 
                         case "NOSERVER":
-                            System.out.println("\tNo such language server is online: " + languageCodeField.getText());
-                            System.out.println("End of connection\n");
+                            System.out.println("\tNo such language server is online: " + languageCodeField.getText() + "\n");
                             break;
                     }
                 }
@@ -115,9 +128,9 @@ public class ClientWindowController {
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
             String translation = reader.readLine();
-            System.out.println("\tReceived translation: " + translation);
+            System.out.println("\tReceived translation: " + translation + "\n");
 
-            if (translation.equals("NULL")) {
+            if (translation.equals("NOWORD")) {
                 Platform.runLater(() -> answerLabel.setText("Cannot translate"));
             } else {
                 Platform.runLater(() -> answerLabel.setText(translation));
@@ -129,9 +142,9 @@ public class ClientWindowController {
         }
     }
 
-    public void stop () {
+    public void stop (int exitCode) {
         System.out.println("Turning off client...");
         executor.shutdownNow();
-        System.exit(1);
+        System.exit(exitCode);
     }
 }

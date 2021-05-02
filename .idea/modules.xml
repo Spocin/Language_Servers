@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Client/Client.iml" filepath="$PROJECT_DIR$/Client/Client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Language Server/Language Server.iml" filepath="$PROJECT_DIR$/Language Server/Language Server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Language_Server/Language_Server.iml" filepath="$PROJECT_DIR$/Language_Server/Language_Server.iml" />
       <module fileurl="file://$PROJECT_DIR$/Proxy/Proxy.iml" filepath="$PROJECT_DIR$/Proxy/Proxy.iml" />
     </modules>
   </component>

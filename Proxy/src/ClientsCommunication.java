@@ -12,22 +12,34 @@ public class ClientsCommunication {
     private String serverCode;
     private String port;
 
+    private BufferedReader reader;
+    private PrintWriter writer;
+
     public ClientsCommunication(Socket socket, ConcurrentHashMap<String,Integer> serversMap) {
 
         this.socket = socket;
         this.serversMap = serversMap;
 
-        receiveData();
-        boolean forwardRequest = checkIfTargetServerIsOnline();
+        try {
+            this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 
-        if (forwardRequest) {
-            forwardRequestToServer();
+            receiveData();
+            boolean forwardRequest = checkIfTargetServerIsOnline();
+
+            if (forwardRequest) {
+                System.out.println("\tForwarding request...");
+                forwardRequestToServer();
+            }
+
+        } catch (IOException e) {
+            System.out.println("\tError obtaining streams from socket\n");
         }
     }
 
     private void receiveData () {
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+        try {
             this.word = reader.readLine();
             this.serverCode = reader.readLine();
             this.port = reader.readLine();
@@ -35,28 +47,20 @@ public class ClientsCommunication {
             System.out.println("\tReceived data: " + word + " | " + serverCode + " | " + port);
 
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error receiving data" + "\u001B[0m\n");
+            System.out.println("\tError receiving data\n");
         }
     }
 
     private boolean checkIfTargetServerIsOnline() {
 
-        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()),true)) {
-
-            if (serversMap.containsKey(serverCode)) {
-                writer.println("OK");
-                System.out.println("\tTarget server is online");
-                return true;
-            }
-
-            writer.println("NOSERVER");
-            System.out.println("\tTarget server is offline");
-            return false;
-
-        } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error verifying if target server is online" + "\u001B[0m\n");
+        if (serversMap.containsKey(serverCode)) {
+            writer.println("OK");
+            System.out.println("\tTarget server is online\n");
+            return true;
         }
 
+        writer.println("NOSERVER");
+        System.out.println("\tTarget server is offline\n");
         return false;
     }
 
@@ -69,7 +73,7 @@ public class ClientsCommunication {
                 System.out.println("\tConnected to server");
 
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error connecting to server" + "\u001B[0m\n");
+                System.out.println("\tError connecting to server\n");
             }
 
             try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(forwardSocket.getOutputStream()),true)) {
@@ -79,13 +83,14 @@ public class ClientsCommunication {
                 writer.println(socket.getLocalAddress().getHostAddress());
                 writer.println(port);
 
-                System.out.println("\tForwarded request");
+                System.out.println("\tSuccessfully forwarded request\n");
+
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error sending data" + "\u001B[0m");
+                System.out.println("\tError sending data\n");
             }
 
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error forwarding request" + "\u001B[0m\n");
+            System.out.println("\tError forwarding request\n");
         }
 
     }

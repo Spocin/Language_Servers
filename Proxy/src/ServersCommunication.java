@@ -26,7 +26,7 @@ public class ServersCommunication {
 
             answerRequest();
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error obtaining streams from socket" + "\u001B[0m\n");
+            System.out.println("\tError obtaining streams from socket\n");
         }
     }
 

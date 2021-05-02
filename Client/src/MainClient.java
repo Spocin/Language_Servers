@@ -16,7 +16,7 @@ public class MainClient extends Application {
         Parent root = loader.load();
 
         ClientWindowController controller = loader.getController();
-        stage.setOnCloseRequest(event -> controller.stop());
+        stage.setOnCloseRequest(event -> controller.stop(0));
 
         stage.setTitle("Language client");
         stage.setScene(new Scene(root,500,200));
