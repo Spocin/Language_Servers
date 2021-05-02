@@ -25,7 +25,8 @@ public class PingServers {
 
             pingAllServers();
 
-            printResult();
+            //Delete comment to show pinging process on console
+            //printResult();
         }
     }
 
@@ -48,11 +49,13 @@ public class PingServers {
                     return "\t" + serverCode + ": answered\n";
                 } else {
                     languageServersMap.remove(serverCode);
+                    System.out.println("Removed: " + serverCode);
                     return "\t" + serverCode + ": didn't answer\n";
                 }
 
             } catch (IOException e) {
                 languageServersMap.remove(serverCode);
+                System.out.println("Removed: " + serverCode);
                 return "\t" + serverCode + ": error pinging\n";
             }
 

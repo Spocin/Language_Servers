@@ -26,7 +26,6 @@ public class IdentifyRequest {
             this.identifier = receiveIdentifier();
             answerRequest();
 
-            System.out.println();
         } catch (IOException e) {
             System.out.println("\tError obtaining streams from socket\n");
         }
@@ -35,7 +34,6 @@ public class IdentifyRequest {
     private String receiveIdentifier () throws IOException {
 
         try {
-            System.out.println("\tReceiving identifier...");
             return reader.readLine();
 
         } catch (IOException e) {
@@ -51,12 +49,12 @@ public class IdentifyRequest {
 
         switch (identifier) {
             case "PING":
-                System.out.println("\tSuccessfully received identifier: " + identifier);
                 receivedKnowIdentifier = true;
                 answerPing();
                 break;
 
             case "TRANSLATE":
+                System.out.println("\tProxy connected with translation request...");
                 System.out.println("\tSuccessfully received identifier: " + identifier);
                 receivedKnowIdentifier = true;
                 answerTranslate();
@@ -78,7 +76,6 @@ public class IdentifyRequest {
     private void answerPing() {
 
         writer.println("PONG");
-        System.out.println("\tAnswered ping");
     }
 
     private void answerTranslate() {
@@ -96,10 +93,10 @@ public class IdentifyRequest {
 
                 if (wordsMap.containsKey(word)) {
                     writer.println(wordsMap.get(word));
-                    System.out.println("\tSent translation");
+                    System.out.println("\tSent translation\n");
                 } else {
                     writer.println("NOWORD");
-                    System.out.println("\tNo translation in dictionary");
+                    System.out.println("\tNo translation in dictionary\n");
                 }
 
             } catch (IOException e) {

@@ -68,12 +68,18 @@ public class ClientWindowController {
     }
 
     private boolean verifyIntegrity() {
-        if (wordTextField.getText().isEmpty()) {
+        String word = wordTextField.getText();
+        String serverCode = languageCodeField.getText();
+
+        word = word.trim();
+        serverCode = serverCode.trim();
+
+        if (word.isEmpty()) {
             System.out.println("word field is empty");
             return false;
         }
 
-        if (languageCodeField.getText().isEmpty()) {
+        if (serverCode.isEmpty()) {
             System.out.println("language server field is empty");
             return false;
         }
@@ -97,8 +103,14 @@ public class ClientWindowController {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                 try (PrintWriter writer = new PrintWriter(socket.getOutputStream(),true)) {
 
-                    writer.println(wordTextField.getText());
-                    writer.println(languageCodeField.getText());
+                    String word = wordTextField.getText();
+                    String serverCode = languageCodeField.getText();
+
+                    word = word.trim();
+                    serverCode = serverCode.trim();
+
+                    writer.println(word);
+                    writer.println(serverCode);
                     writer.println(serverSocket.getLocalPort());
                     System.out.println("\tSent data");
 
@@ -135,8 +147,6 @@ public class ClientWindowController {
             } else {
                 Platform.runLater(() -> answerLabel.setText(translation));
             }
-
-            System.out.println("End of connection\n");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -32,8 +32,7 @@ public class LanguageServer {
         while (true) {
             System.out.println("==[Listening on port: " + serverSocket.getLocalPort() + "]===========");
             System.out.println("STOP - turns off the server");
-            System.out.println("LOGIN - signs up on main server");
-            System.out.println("LOGOUT - signs out from main server\n");
+            System.out.println("LOGIN - signs up on main server\n");
 
             switch (sc.nextLine()) {
                 case "STOP":
@@ -44,10 +43,6 @@ public class LanguageServer {
 
                 case "LOGIN":
                     logInToProxy();
-                    break;
-
-                case "LOGOUT":
-                    logOutFromProxy();
                     break;
             }
         }
@@ -110,6 +105,7 @@ public class LanguageServer {
                 }
                 wordsMap.put(words[0],words[1]);
             }
+            System.out.println();
 
             System.out.println("\tLoading successful\n");
 
@@ -180,50 +176,10 @@ public class LanguageServer {
         }
     }
 
-    private void logOutFromProxy() {
-        System.out.println("Logging out from Proxy...");
-
-        try (Socket socket = new Socket()) {
-            try {
-                socket.connect(new InetSocketAddress("127.0.0.1",7777));
-            } catch (IOException e) {
-                System.out.println("\tError connecting to proxy");
-            }
-
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-                try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()),true)) {
-
-                    writer.println("LOGOUT");
-                    writer.println(languageCode);
-                    System.out.println("\tSent info");
-
-                    String response = reader.readLine();
-                    System.out.println("\tReceived answer");
-
-                    switch (response) {
-                        case "Successful":
-                            System.out.println("\tSuccessfully logged out\n");
-                            break;
-
-                        case "NoServer":
-                            System.out.println("\tServer not logged in\n");
-                            break;
-                    }
-                }
-            } catch (IOException e) {
-                System.out.println("\tError reading/writing to Proxy");
-            }
-
-        } catch (IOException e) {
-            System.err.println("\tError logging out from Proxy\n");
-        }
-    }
-
     Runnable requestsLogic = () -> {
         while (true) {
             try {
                 Socket socket = serverSocket.accept();
-                System.out.println("Accepted proxy connection...");
                 executor.submit(() -> new IdentifyRequest(socket,wordsMap));
 
             } catch (IOException e) {

@@ -55,7 +55,7 @@ public class ClientsCommunication {
 
         if (serversMap.containsKey(serverCode)) {
             writer.println("OK");
-            System.out.println("\tTarget server is online\n");
+            System.out.println("\tTarget server is online");
             return true;
         }
 

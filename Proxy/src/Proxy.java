@@ -98,7 +98,7 @@ public class Proxy {
         pingExecutor = Executors.newScheduledThreadPool(1);
 
         try {
-            pingExecutor.scheduleWithFixedDelay(() -> new PingServers(mainExecutor,languageServersMap),5,10,TimeUnit.SECONDS);
+            pingExecutor.scheduleWithFixedDelay(() -> new PingServers(mainExecutor,languageServersMap),1,1,TimeUnit.SECONDS);
 
             System.out.println("\tSuccessfully created pinger\n");
 
