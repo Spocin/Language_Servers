@@ -36,7 +36,7 @@ public class ServersCommunication {
             return reader.readLine();
 
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error receiving communication" + "\u001B[0m\n");
+            System.out.println("\tError receiving communication\n");
             return "NULL";
         }
     }
@@ -60,12 +60,12 @@ public class ServersCommunication {
         }
 
         if (!receivedKnowIdentifier) {
-            System.out.println("\u001B[31m\t" + "Received unknown identifier" + "\u001B[0m");
-            System.out.println("\u001B[31m\t" + "Closing connection" + "\u001B[0m");
+            System.out.println("\tReceived unknown identifier");
+            System.out.println("\t" + "Closing connection");
             try {
                 socket.close();
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error closing connection" + "\u001B[0m");
+                System.out.println("\tError closing connection");
             }
             System.out.println();
         }
@@ -81,7 +81,7 @@ public class ServersCommunication {
 
             if (languageServersMap.containsKey(serverCode)) {
                 writer.println("DENY");
-                System.out.println("\u001B[31m\t" + "Error, server already logged in" + "\u001B[0m\n");
+                System.out.println("\tError, server already logged in\n");
             } else {
                 writer.println("ACCEPT");
                 languageServersMap.put(serverCode,Integer.parseInt(serverPort));
@@ -89,7 +89,7 @@ public class ServersCommunication {
             }
 
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error communicating with server" + "\u001B[0m\n");
+            System.out.println("\tError communicating with server\n");
             e.printStackTrace();
         }
     }
@@ -106,12 +106,12 @@ public class ServersCommunication {
 
             } else {
 
-                System.out.println("\u001B[31m\t" + "No such server: " + serverCode + "\u001B[0m\n");
+                System.out.println("\tNo such server: " + serverCode + "\n");
                 writer.println("NoServer");
             }
 
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error communicating with server" + "\u001B[0m\n");
+            System.out.println("\tError communicating with server\n");
         }
     }
 }

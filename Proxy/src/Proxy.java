@@ -62,7 +62,7 @@ public class Proxy {
             System.out.println("\tSuccessfully created listener for servers\n");
 
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error initializing listener for servers" + "\u001B[0m\n");
+            System.out.println("\tError initializing listener for servers\n");
             mainExecutor.shutdownNow();
             System.exit(-1);
         }

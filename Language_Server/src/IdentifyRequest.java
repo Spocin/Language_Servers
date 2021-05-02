@@ -28,7 +28,7 @@ public class IdentifyRequest {
 
             System.out.println();
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error obtaining streams from socket" + "\u001B[0m\n");
+            System.out.println("\tError obtaining streams from socket\n");
         }
     }
 
@@ -39,7 +39,7 @@ public class IdentifyRequest {
             return reader.readLine();
 
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error receiving identifier" + "\u001B[0m\n");
+            System.out.println("\tError receiving identifier\n");
             socket.close();
             return null;
         }
@@ -64,12 +64,12 @@ public class IdentifyRequest {
         }
 
         if (!receivedKnowIdentifier) {
-            System.out.println("\u001B[31m\t" + "Received unknown identifier" + "\u001B[0m");
-            System.out.println("\u001B[31m\t" + "Closing connection" + "\u001B[0m");
+            System.out.println("\tReceived unknown identifier");
+            System.out.println("\t" + "Closing connection");
             try {
                 socket.close();
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error closing connection" + "\u001B[0m");
+                System.out.println("\tError closing connection");
             }
             System.out.println();
         }
@@ -103,11 +103,11 @@ public class IdentifyRequest {
                 }
 
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error connection to client" + "\u001B[0m");
+                System.out.println("\t" + "Error connection to client");
             }
 
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error reading/writing from client" + "\u001B[0m\n");
+            System.out.println("\tError reading/writing from client\n");
         }
     }
 }

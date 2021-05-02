@@ -60,7 +60,7 @@ public class LanguageServer {
 
         boolean pathPass = false;
         while (!pathPass) {
-            System.out.print("Please enter a path to a dictionary: ");
+            System.out.print("Please enter path to a dictionary: ");
             dictionaryPath = sc.nextLine();
             pathPass = validatePath(dictionaryPath);
         }
@@ -72,19 +72,19 @@ public class LanguageServer {
         try {
             Paths.get(path);
         } catch (InvalidPathException | NullPointerException e) {
-            System.out.println("\u001B[31m" + "Invalid path" + "\u001B[0m");
+            System.out.println("Invalid path");
             return false;
         }
 
         File file = new File(path);
 
         if (file.isDirectory()) {
-            System.out.println("\u001B[31m" + "Invalid path: Path is directory\n" + "\u001B[0m");
+            System.out.println("Invalid path: Path is directory\n");
             return false;
         }
 
         if (!file.exists()) {
-            System.out.println("\u001B[31m" + "Invalid path: File doesn't exist\n" + "\u001B[0m");
+            System.out.println("Invalid path: File doesn't exist\n");
             return false;
         }
 
@@ -115,7 +115,7 @@ public class LanguageServer {
 
         } catch (Exception e) {
             wordsMap.clear();
-            System.out.println("\u001B[31m\t" + e.getMessage() + "\u001B[0m\n");
+            System.out.println("\t" + e.getMessage());
             loadDictionary(getPathFromUser());
         }
     }
@@ -128,8 +128,8 @@ public class LanguageServer {
             this.serverSocket = new ServerSocket(0,10,InetAddress.getByName(null));
 
         } catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error creating Server Socket" + "\u001B[0m");
-            System.out.println("\u001B[31m\t" + "Shutting down..." + "\u001B[0m\n");
+            System.out.println("Error creating Server Socket");
+            System.out.println("Shutting down...\n");
             executor.shutdownNow();
             System.exit(-1);
         }
@@ -146,7 +146,7 @@ public class LanguageServer {
                 socket.connect(new InetSocketAddress("127.0.0.1", 7777),500);
                 System.out.println("\tConnected to proxy");
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error connecting to proxy" + "\u001B[0m");
+                System.out.println("\tError connecting to proxy");
             }
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
@@ -172,11 +172,11 @@ public class LanguageServer {
 
                 }
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error communicating with proxy" + "\u001B[0m\n");
+                System.out.println("\tError communicating with proxy\n");
             }
         }
         catch (IOException e) {
-            System.out.println("\u001B[31m\t" + "Error logging in to Proxy" + "\u001B[0m\n");
+            System.out.println("\tError logging in to Proxy\n");
         }
     }
 
@@ -187,7 +187,7 @@ public class LanguageServer {
             try {
                 socket.connect(new InetSocketAddress("127.0.0.1",7777));
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error connecting to proxy" + "\u001B[0m");
+                System.out.println("\tError connecting to proxy");
             }
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
@@ -211,11 +211,11 @@ public class LanguageServer {
                     }
                 }
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error reading/writing to Proxy" + "\u001B[0m");
+                System.out.println("\tError reading/writing to Proxy");
             }
 
         } catch (IOException e) {
-            System.err.println("\u001B[31m\t" + "Error logging out from Proxy" + "\u001B[0m\n");
+            System.err.println("\tError logging out from Proxy\n");
         }
     }
 
@@ -223,11 +223,11 @@ public class LanguageServer {
         while (true) {
             try {
                 Socket socket = serverSocket.accept();
-                System.out.println("Accepted proxy connection");
+                System.out.println("Accepted proxy connection...");
                 executor.submit(() -> new IdentifyRequest(socket,wordsMap));
 
             } catch (IOException e) {
-                System.out.println("\u001B[31m\t" + "Error accepting request" + "\u001B[0m\n");
+                System.out.println("\tError accepting request\n");
             }
         }
     };
